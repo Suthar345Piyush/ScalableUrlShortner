@@ -42,7 +42,7 @@ type Config struct {
 	// kafka broker and kafka topic - Broker(Topic)
 
 	KafkaBrokers []string
-	KafkaTopic   []string
+	KafkaTopic   string
 
 	// local lru cache size
 
@@ -93,11 +93,20 @@ func Load() *Config {
 	v.SetDefault("LOG_LEVEL", "info")
 
 	return &Config{
-		Port:         v.GetString("PORT"),
-		ReadTimeout:  v.GetDuration("READ_TIMEOUT"),
-		WriteTimeout: v.GetDuration("WRITE_TIMEOUT"),
-		NodeID:       v.GetInt64("NODE_ID"),
-		DBShards:     splitTrimmed(v.GetString("DB_SHARDS")),
+		Port:            v.GetString("PORT"),
+		ReadTimeout:     v.GetDuration("READ_TIMEOUT"),
+		WriteTimeout:    v.GetDuration("WRITE_TIMEOUT"),
+		NodeID:          v.GetInt64("NODE_ID"),
+		DBShards:        splitTrimmed(v.GetString("DB_SHARDS")),
+		RedisAddrs:      splitTrimmed(v.GetString("REDIS_ADDRS")),
+		KafkaBrokers:    splitTrimmed(v.GetString("KAFKA_BROKERS")),
+		KafkaTopic:      v.GetString("KAFKA_TOPIC"),
+		LRUMaxItems:     v.GetInt64("LRU_MAX_ITEMS"),
+		RateLimitMax:    v.GetInt("RATE_LIMIT_MAX"),
+		RateLimitWindow: v.GetDuration("RATE_LIMIT_WINDOW"),
+		BaseURL:         v.GetString("BASE_URL"),
+		APIKey:          v.GetString("API_KEY"),
+		LogLevel:        v.GetString("LOG_LEVEL"),
 	}
 
 }
