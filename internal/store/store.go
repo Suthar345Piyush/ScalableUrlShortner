@@ -12,6 +12,10 @@ import (
 
 var ErrNotFound = errors.New("store: short code not found")
 
+var ErrExpired = errors.New("store: short code is expired")
+
+var ErrInvalidURL = errors.New("reqURL : request url is invalid")
+
 // main url struct
 
 type URL struct {
