@@ -83,6 +83,8 @@ func (r *ShardRouter) shardFor(code string) *pgxpool.Pool {
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(code))
 
+	// hash(short_code) % N
+
 	return r.pools[h.Sum32()%uint32(len(r.pools))]
 
 }
