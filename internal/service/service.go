@@ -101,7 +101,7 @@ func (s *service) GetURL(ctx context.Context, code string) (string, error) {
 	// checking the expiry
 
 	if record.ExpiresAt != nil && record.ExpiresAt.Before(time.Now()) {
-		return "", store.ErrExpired
+		return "", ErrExpired
 	}
 
 	// back fill both cache (lru and redis) if they misses
@@ -162,7 +162,7 @@ func validateURL(rawURL string) error {
 	u, err := url.ParseRequestURI(rawURL)
 
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
-		return store.ErrInvalidURL
+		return ErrInvalidURL
 	}
 
 	return nil
@@ -191,7 +191,7 @@ func (s *service) GetStats(ctx context.Context, code string) (*store.URL, error)
 	record, err := s.store.Get(ctx, code)
 
 	if errors.Is(err, store.ErrNotFound) {
-		return nil, store.ErrNotFound
+		return nil, ErrNotFound
 	}
 
 	if err != nil {
