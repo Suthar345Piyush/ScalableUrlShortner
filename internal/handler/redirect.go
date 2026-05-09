@@ -83,6 +83,6 @@ func (h *Handler) Redirect(c fiber.Ctx) error {
 		UserAgent: c.Get("User-Agent"),
 	})
 
-	return c.Redirect(longURL, fiber.StatusMovedPermanently)
+	return c.Redirect().Status(fiber.StatusMovedPermanently).To(longURL)
 
 }
