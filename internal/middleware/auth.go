@@ -11,7 +11,7 @@ import (
 // header (Bearer <key>). Pass the valid key from your Config.
 
 func Auth(validKey string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		key := c.Get("X-API-Key")
 		if key == "" {
 			auth := c.Get("Authorization")
