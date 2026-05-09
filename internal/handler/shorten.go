@@ -3,10 +3,12 @@
 package handler
 
 import (
+	"errors"
 	"time"
 
 	"github.com/Suthar345Piyush/internal/service"
 	"github.com/gofiber/fiber/v3"
+	"go.uber.org/zap"
 )
 
 // shorten request struct
@@ -45,7 +47,7 @@ func (h *Handler) Shorten(c fiber.Ctx) error {
 
 	req := service.ShortenRequest{
 		LongURL: body.LongURL,
-		UserID:  UserIDFromContext(c), // extracting this user id from auth middleware
+		UserID:  userIDFromContext(c), // extracting this user id from auth middleware
 	}
 
 	if body.ExpiresAt != "" {
@@ -58,12 +60,32 @@ func (h *Handler) Shorten(c fiber.Ctx) error {
 		req.ExpiresAt = &t
 	}
 
+	resp, err := h.svc.Shorten(c.Context(), req)
+
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidURL) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		h.log.Error("shorten: service error", zap.String("url", body.LongURL), zap.Error(err))
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "internal server error",
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(ShortenResponse{
+		ShortCode: resp.ShortCode,
+		ShortURL:  resp.ShortURL,
+	})
 }
 
 // function for userIdFromContext
 // returns the id
 
-func userIdFromContext(c *fiber.Ctx) int64 {
+func userIDFromContext(c fiber.Ctx) int64 {
 	id, _ := c.Locals("user_id").(int64)
 	return id
 }
