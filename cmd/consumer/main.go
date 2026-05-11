@@ -132,7 +132,7 @@ func main() {
 	if len(batch) > 0 {
 		if err := insertBatch(ctx, pool, batch); err != nil {
 			log.Error("consumer: insert batch failure", zap.Error(err))
-			continue
+			// continue
 		}
 		log.Info("consumer: batch inserted", zap.Int("count", len(batch)))
 	}

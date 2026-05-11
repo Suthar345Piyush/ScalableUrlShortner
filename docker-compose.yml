@@ -1,0 +1,76 @@
+version: "3.9"
+
+
+services:
+
+  postgres-shard-0:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: urluser
+      POSTGRES_PASSWORD: urlpass
+      POSTGRES_DB: urls
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-shard-0:/var/lib/postgresql/data
+      - ./internal/store/migrations:/docker-entrypoint-initdb.d
+
+  postgres-shard-1:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: urluser
+      POSTGRES_PASSWORD: urlpass
+      POSTGRES_DB: urls
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg-shard-1:/var/lib/postgresql/data
+      - ./internal/store/migrations:/docker-entrypoint-initdb.d
+
+  # ── Redis (single node for local dev) ────────────────────────────────────
+
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+
+  # ── Kafka + Zookeeper ─────────────────────────────────────────────────────
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  # ── Analytics Postgres ───────────────────────────────────────────────────
+  
+  postgres-analytics:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: analyticsuser
+      POSTGRES_PASSWORD: analyticspass
+      POSTGRES_DB: analytics
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg-analytics:/var/lib/postgresql/data
+
+volumes:
+  pg-shard-0:
+  pg-shard-1:
+  pg-analytics:
